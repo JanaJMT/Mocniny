@@ -35,7 +35,7 @@ main{max-width:1100px;margin:0 auto;padding:18px}
 #tv{font-size:28px;font-variant-numeric:tabular-nums;min-width:80px;text-align:center;font-weight:700}
 #tv.end{color:var(--bad);animation:bl .5s infinite alternate}
 @keyframes bl{to{opacity:.25}}
-#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ac);padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;overflow-x:auto;z-index:6}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ac);padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;overflow-x:auto;z-index:10}
 .tm{min-width:170px;border:1px solid var(--bd);border-radius:12px;padding:6px 10px;flex:1}
 .tm b{display:block}
 .sc{font-size:26px;font-weight:700;color:var(--ac)}
@@ -52,23 +52,25 @@ tr.win td{background:color-mix(in srgb,var(--ok) 20%,transparent);font-weight:70
 <header>
 <h1>🏥 Zmena na oddelení</h1>
 <nav id="nav"></nav>
-<div id="timer"><button class="sm" onclick="tset(20)">20 s</button><button class="sm" onclick="tset(60)">1 min</button><button class="sm" onclick="tset(120)">2 min</button><button class="sm" onclick="tset(180)">3 min</button><span id="tv">0:20</span><button class="sm" onclick="tgo()" id="tb">▶</button></div>
+<div id="timer"><button class="sm" onclick="tset(20)">20 s</button><button class="sm" onclick="tset(60)">1 min</button><button class="sm" onclick="tset(120)">2 min</button><button class="sm" onclick="tset(180)">3 min</button><button class="sm" id="tb" onclick="tgo()">▶</button><span id="tv">0:20</span></div>
 </header>
 <main id="app"></main>
 <div id="bar"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
 <script>
 var R=[
-{t:'Kolo 1: Čítanie letáka',tm:60,p:1,risk:0,info:'Každý člen tímu dostane jednu kartu A až E a prepíše ju bez záporných exponentov. Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. (1 bod)',k:[['A: µg·ml⁻¹','µg/ml'],['B: mg·kg⁻¹·h⁻¹','mg/(kg·h)'],['C: ml·h⁻¹','ml/h'],['D: kg⁻¹ · kg = ?','1 (kg⁰)'],['E: (mg·ml⁻¹)⁻¹','ml/mg']]},
-{t:'Kolo 2: Dávky',tm:180,p:3,risk:1,info:'Každý člen tímu rieši jednu úlohu A až E, píše aj jednotky (musia sa pokrátiť na správnu). Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. Chyba v dávke = tím stráca pacienta. (3 body)',k:[['A: Pacient 80 kg, dávka 3 mg·kg⁻¹·deň⁻¹, liečba 4 dni. Koľko mg celkom?','3 · 80 · 4 = 960 mg'],['B: Infúzia 1,5 ml·kg⁻¹·h⁻¹, pacient 50 kg, 8 hodín. Koľko ml?','1,5 · 50 · 8 = 600 ml'],['C: Predpísané 120 mg, koncentrácia 5 mg·ml⁻¹. Koľko ml natiahnuť?','120 : 5 = 24 ml'],['D: Pacient 40 kg, dávka 2 mg·kg⁻¹ rozdelená na 4 rovnaké dávky, koncentrácia 4 mg·ml⁻¹. Koľko ml je jedna dávka?','2·40 = 80 mg; 80 : 4 = 20 mg; 20 : 4 = 5 ml'],['E: Pacient 60 kg, dávka 0,5 mg·kg⁻¹·h⁻¹, podávanie 6 hodín, koncentrácia 2 mg·ml⁻¹. Koľko ml roztoku treba?','0,5 · 60 · 6 = 180 mg; 180 : 2 = 90 ml']]},
-{t:'Kolo 3: Poplach na tlačiarni',tm:180,p:4,risk:0,info:'Každý člen tímu zjednoduší jeden výraz A až E bez záporných exponentov a uvedie podmienky. Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. (4 body)',k:[['A: (c⁻¹ · V²)³ / (c² · V⁻¹)⁻²','c · V⁴ (c ≠ 0, V ≠ 0)'],['B: (d⁻² · m)³ · (d · m⁻¹)²','m / d⁴ (d ≠ 0, m ≠ 0)'],['C: (t⁻¹ · V²)⁻² · t⁻³ / V⁻⁴','1 / t (t ≠ 0, V ≠ 0)'],['D: (a⁻² · b³)² · (a³ · b⁻¹)⁻² / b⁴','b⁴ / a¹⁰ (a ≠ 0, b ≠ 0)'],['E: (2p⁻¹ · q²)³ · (4p · q⁻¹)⁻¹','2q⁷ / p⁴ (p ≠ 0, q ≠ 0)']]},
-{t:'Kolo 4: Chyba v zošite',tm:120,p:3,risk:1,info:'Každý člen tímu dostane jeden zápis A až E, nájde chybu, opraví ju a vysvetlí. Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. Prehliadnutá chyba = tím stráca pacienta. Nájdená chyba u súpera = bonus +2 (tlačidlá dole). (3 body)',k:[['A: kg⁻¹ · kg = 0','kg⁰ = 1. Exponent 0 neznamená výsledok 0.'],['B: (2d)³ = 2d³','8d³. Umocňuje sa celý súčin.'],['C: 3t⁻² = 1/(3t²)','3/t². Záporný exponent sa týka len t.'],['D: „5 mg·kg⁻¹ pre 60 kg je 5 · 60⁻¹ mg“','kg⁻¹ patrí jednotke: 5 mg·kg⁻¹ · 60 kg = 300 mg'],['E: (x²)³ = x⁵','x⁶. Pri mocnine mocniny sa exponenty násobia.']]}
+{t:'Kolo 1: Čítanie letáka',tm:60,p:1,risk:0,k:[['A. Zjednodušiť: (x²)³','x⁶'],['B. Zjednodušiť: x⁵ · x²','x⁷'],['C. Zjednodušiť: x⁸ / x³','x⁵'],['D. Zjednodušiť: (x⁴)²','x⁸'],['E. Zjednodušiť: x⁻² · x⁵','x³']]},
+{t:'Kolo 2: Dávky',tm:180,p:3,risk:1,k:[['A. 2x² · 3x³','6x⁵'],['B. (4x³)/(2x)','2x²'],['C. (2x²)³','8x⁶'],['D. 5x⁴ / x²','5x²'],['E. x⁻³ · x⁷','x⁴']]},
+{t:'Kolo 3: Poplach na tlačiarni',tm:180,p:4,risk:0,k:[['A. (xⁿ⁺²)² · x⁻²ⁿ / x⁴','1'],['B. x⁵ · x⁻² / x³','x⁰ = 1'],['C. (x²y³)² / (xy)','x³y⁵'],['D. x⁻² · x⁴ / x²','1'],['E. (x⁴)² / x⁶','x²']]},
+{t:'Kolo 4: Chyba v zošite',tm:120,p:3,risk:1,k:[['A. x² · x³ = x⁵','Správne'],['B. x⁶ / x² = x³','Správne'],['C. (x²)³ = x⁶','Správne'],['D. x⁴ · x⁻¹ = x³','Správne'],['E. x⁰ = 0','Chyba: x⁰ = 1']]}
 ];
 var FQ='(xⁿ⁺²)² · x⁻²ⁿ / x⁴', FA='x²ⁿ⁺⁴ · x⁻²ⁿ · x⁻⁴ = x⁰ = 1 (x ≠ 0)';
 var S={v:-2,teams:['Zelení Záchranári','Rýchle Striekačky','Sestričky v akcii','Doktori Mocniny','Tím Stetoskop','Odmocňovači'].map(nt),open:{}};
 function nt(n){return{n:n,adj:0,la:0,m:{},bet:0,fin:0}}
 try{var sv=localStorage.getItem('zno3');if(sv){var o=JSON.parse(sv);if(o&&o.teams&&o.teams.length){S=o;S.open={}}}}catch(e){}
 function save(){try{localStorage.setItem('zno3',JSON.stringify(S))}catch(e){}}
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function esc(s){return String(s).replace(/[&<>\"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\\':'&#92;'}[c]})}
 function pts(t){var s=t.adj,r,i;for(r=0;r<R.length;r++)for(i=0;i<R[r].k.length;i++)if(t.m[r+'_'+i]==1)s+=R[r].p;if(t.fin==1)s+=t.bet;if(t.fin==2)s-=t.bet;return s}
 function rpts(t,r){var s=0;for(var i=0;i<R[r].k.length;i++)if(t.m[r+'_'+i]==1)s+=R[r].p;return s}
 function lives(t){var l=5-t.la,r,i;for(r=0;r<R.length;r++)if(R[r].risk)for(i=0;i<R[r].k.length;i++)if(t.m[r+'_'+i]==2)l--;var p=pts(t);if(p<0)l-=Math.floor(-p/3);return Math.max(0,Math.min(5,l))}
@@ -77,74 +79,39 @@ function go(v){S.v=v;S.open={};render()}
 function mk(r,i,ti){var t=S.teams[ti],k=r+'_'+i,n=R[r].risk?3:2;t.m[k]=((t.m[k]||0)+1)%n;save();render(true)}
 function tg(k){S.open[k]=!S.open[k];render(true)}
 function adj(ti,f,d){S.teams[ti][f]+=d;save();render(true)}
-function render(keep){
-var y=window.scrollY,nav='',i;
-var lab=['1','2','3','4','Finále','Výsledky'];
-nav='<button class="'+(S.v==-2?'on':'')+'" onclick="go(-2)">📖 Príbeh</button><button class="'+(S.v==-1?'on':'')+'" onclick="go(-1)">⚙ Tímy</button>';
+function render(keep){var y=window.scrollY,nav='',i;var lab=['1','2','3','4','Finále','Výsledky'];nav='<button class="'+(S.v==-2?'on':'')+'" onclick="go(-2)">📖 Príbeh</button><button class="'+(S.v==-1?'on':'')+'" onclick="go(-1)">⚙ Tímy</button>';
 for(i=0;i<6;i++)nav+='<button class="'+(S.v==i?'on':'')+'" onclick="go('+i+')">'+(i<4?'Kolo ':'')+lab[i]+'</button>';
-document.getElementById('nav').innerHTML=nav;
-var h='';
-if(S.v==-2)h=story();else if(S.v==-1)h=setup();else if(S.v<4)h=round(S.v);else if(S.v==4)h=fin();else h=res();
-document.getElementById('app').innerHTML=h;
-bar();if(keep){window.scrollTo(0,y)}else{window.scrollTo(0,0)}}
-function story(){
-var svg=`<img src="uvod.png"
-style="width:100%;height:auto;display:block;border-radius:12px"
-alt="Úvodný obrázok k príbehu o mocninách a dávkovaní liekov">`;
-return '<div class="card" style="padding:8px">'+svg+'</div><div class="card" style="font-size:22px;line-height:1.5"><div class="q">📖 Babkine lieky</div><p>V nedeľu poobede sedela prváčka Nina u babky. Babka si chystala lieky na týždeň a držala v ruke leták, ktorý bez okuliarov nevidela.</p><p><i>„Ninka, prečítaj mi, čo je tu napísané. Dávkovanie: 5 mg·kg⁻¹·deň⁻¹. Čo je to to mínus jedna?“</i></p><p>Nina sa zasekla. V škole sa učili o záporných exponentoch, ale ešte jej nenapadlo, že ich uvidí na papieri s liekom. V pondelok to povedala spolužiačke Jane. Tá sa usmiala:</p><p><i>„Mínus jednej sa v nemocnici nevyhneš. kg⁻¹ znamená ‚na kilogram‘. Každá dávka, každá infúzia aj každá koncentrácia je zapísaná takto. Kto to nevie čítať, ten sa pomýli. A kto sa pomýli, ten ublíži.“</i></p><p><b>Dnes ste Ninini kolegovia.</b> Každý tím preberie jedno oddelenie, má 5 pacientov a musí ich ochrániť pred chybami v dávkach, jednotkách a vzorcoch.</p><p class="mu" style="font-size:18px">Správna odpoveď = body. Chyba v dávke alebo v zošite = strata pacienta. Každý zachránený pacient na konci = +1 bod. Víťazí tím s najvyšším súčtom.</p><div class="row"><button class="on" style="font-size:22px" onclick="go(-1)">Prihlásiť tímy →</button></div></div>'}
-function setup(){
-var h='<div class="card"><div class="q">Tímy</div><p class="mu">Každý tím sa prihlási sám: napíše názov a klikne na tlačidlo (alebo stlačí Enter). Prihlásené tímy: <b>'+S.teams.length+' / 15</b>. Názov tímu môžeš kedykoľvek prepísať v zozname nižšie. Každý tím začína s 5 pacientmi.</p><div class="row"><input id="nn" maxlength="24" placeholder="Názov tímu" style="font-size:24px;flex:1;min-width:220px" onkeydown="if(event.key===\'Enter\')reg()"><button class="on" onclick="reg()" style="font-size:22px">Prihlásiť tím</button></div><p class="mu" id="msg"></p>';
-S.teams.forEach(function(t,i){h+='<div class="row"><span style="font-size:22px">'+(i+1)+'.</span><input value="'+esc(t.n)+'" maxlength="24" style="font-size:22px;flex:1;min-width:200px" oninput="S.teams['+i+'].n=this.value;save();bar()"><button class="sm" onclick="unreg('+i+')">✕ Odhlásiť</button></div>'});
+document.getElementById('nav').innerHTML=nav;var h='';if(S.v==-2)h=story();else if(S.v==-1)h=setup();else if(S.v<4)h=round(S.v);else if(S.v==4)h=fin();else h=res();document.getElementById('app').innerHTML=h;bar();if(keep){window.scrollTo(0,y)}else{window.scrollTo(0,0)}}
+function story(){var svg='<img src="uvod.png" style="width:100%;height:auto;display:block;border-radius:12px" alt="Úvodný obrázok k príbehu o mocninách a dávkovaní liekov">';return '<div class="card" style="padding:8px">'+svg+'</div><div class="card" style="font-size:22px;line-height:1.5"><div class="q">📖 Babkine lieky</div><p>V nedeľu poobede sedela prváčka Nina u babky v lese. Babka mala v špajzi niekoľko liekov, ale zistila, že v zošite sa pomiešali mocniny a dávky. Prihláste sa do tímov a pomôžte chorým pacientom zachrániť správne lieky.</p><p>Každý tím má za úlohu vyriešiť úlohy v jednotlivých kolách, zbierať body a chrániť pacientov. Na konci sa rozhodne, ktorý tím vyhráva.</p></div>'}
+function setup(){var h='<div class="card"><div class="q">Tímy</div><p class="mu">Každý tím sa prihlási sám: napíše názov a klikne na tlačidlo (alebo stlačí Enter). Prihlásené tímy: <b>'+S.teams.length+'</b></p><div class="row"><input id="nn" value="" maxlength="24" placeholder="Názov tímu" style="font-size:20px;flex:1;min-width:220px"><button class="on" onclick="reg()">Pridať tím</button></div><div id="msg" class="mu"></div>';
+S.teams.forEach(function(t,i){h+='<div class="row"><span style="font-size:22px">'+(i+1)+'.</span><input value="'+esc(t.n)+'" maxlength="24" style="font-size:22px;flex:1;min-width:200px" oninput="S.teams['+i+'].n=this.value;save();render(true)"><button onclick="unreg('+i+')">Odstrániť</button></div>'});
 h+='<div class="row"><button onclick="go(0)" class="on"'+(S.teams.length<2?' disabled':'')+'>Začať hru →</button></div>';
 h+='<div class="row"><button onclick="rst()" id="rb">🗑 Vynulovať body a pacientov</button></div></div>';return h}
-function reg(){var e=document.getElementById('nn'),n=e.value.trim(),m=document.getElementById('msg');
-if(!n){m.textContent='Napíš názov tímu.';return}
-if(S.teams.length>=15){m.textContent='Je dosiahnutý maximálny počet 15 tímov.';return}
-if(S.teams.some(function(t){return t.n.toLowerCase()==n.toLowerCase()})){m.textContent='Tento názov už existuje, vyber si iný.';return}
-S.teams.push(nt(n));save();render(true);var f=document.getElementById('nn');if(f)f.focus()}
+function reg(){var e=document.getElementById('nn'),n=e.value.trim(),m=document.getElementById('msg');if(!n){m.textContent='Napíš názov tímu.';return}if(S.teams.length>=15){m.textContent='Je dosiahnutý maximálny počet 15 tímov.';return}if(S.teams.some(function(t){return t.n.toLowerCase()==n.toLowerCase()})){m.textContent='Tento názov už existuje, vyber si iný.';return}S.teams.push(nt(n));save();render(true);var f=document.getElementById('nn');if(f)f.focus()}
 function unreg(i){S.teams.splice(i,1);save();render(true)}
-var rc=0;function rst(){if(!rc){rc=1;document.getElementById('rb').textContent='Naozaj? Klikni ešte raz';setTimeout(function(){rc=0},3000);return}rc=0;S.teams.forEach(function(t){t.adj=0;t.la=0;t.m={};t.bet=0;t.fin=0});S.open={};save();render()}
-function round(r){
-var R0=R[r],h='<div class="card"><div class="q">'+R0.t+'</div><span class="badge">'+R0.p+' b / úloha</span><span class="badge" style="background:var(--warn)">⏱ čas: '+fmt(R0.tm)+'</span>'+(R0.risk?'<span class="badge r">hrozí strata pacienta</span>':'')+'<p class="mu">'+R0.info+'</p><p class="mu">Klikaj na meno tímu: <b>raz</b> = správne'+(R0.risk?', <b>dvakrát</b> = chyba (strata pacienta)':'')+', ďalší klik zruší.</p></div>';
-var ao=S.open['a'+r];
-h+='<div class="card"><div class="mu">Všetky úhohy kola naraz (na premietanie)</div><div class="mu" style="margin-bottom:8px;font-size:20px"><b>Každý zodpovedá za svoj výsledok, lístky si nevymieňajú.</b></div><div class="ov">';
+var rc=0;function rst(){if(!rc){rc=1;document.getElementById('rb').textContent='Naozaj? Klikni ešte raz';setTimeout(function(){rc=0},3000);return}rc=0;S.teams.forEach(function(t){t.adj=0;t.la=0;t.m={};t.bet=0;t.fin=0});save();render(true)}
+function round(r){var R0=R[r],h='<div class="card"><div class="q">'+R0.t+'</div><span class="badge">'+R0.p+' b / úloha</span><span class="badge" style="background:var(--warn)">⏱ čas: '+fmt(R0.tm)+'</span>'+(R0.risk?'<span class="badge r">⚠ Riziko</span>':'')+'<p class="mu">'+(R0.info||'')+'</p></div>';
+var ao=S.open['a'+r];h+='<div class="card"><div class="mu">Všetky úlohy kola naraz (na premietanie)</div><div class="mu" style="margin-bottom:8px;font-size:20px"><b>Každý zodpovedá za svoj výsledok, lístky si nevymieňajú.</b></div>';
 R0.k.forEach(function(q){h+='<div class="oi"><div class="q">'+esc(q[0])+'</div>'+(ao?'<div class="sol">✔ '+esc(q[1])+'</div>':'')+'</div>'});
-h+='</div><button onclick="tg(\'a'+r+'\')">'+(ao?'Skryť všetky riešenia':'Ukázať všetky riešenia')+'</button> <button class="on" onclick="tset('+R0.tm+');tgo()">▶ Spustiť časovač ('+fmt(R0.tm)+')</button></div>';
-h+='<div class="mu" style="margin:4px 4px 8px">Bodovanie po úhach:</div>';
-R0.k.forEach(function(q,i){var k=r+'_'+i;
-h+='<div class="card"><div class="q" style="font-size:22px">'+esc(q[0])+'</div><button onclick="tg(\''+k+'\')">'+(S.open[k]?'Skryť riešenie':'Ukázať riešenie')+'</button>';
+h+='</div><button onclick="tg(\'a'+r+'\')">'+(ao?'Skryť všetky riešenia':'Ukázať všetky riešenia')+'</button> <button class="on" onclick="tset('+R0.tm+');tgo()">▶ Spustiť časovač ('+fmt(R0.tm)+')</button>';
+h+='<div class="mu" style="margin:4px 4px 8px">Bodovanie po úlohách:</div>';
+R0.k.forEach(function(q,i){var k=r+'_'+i;h+='<div class="card"><div class="q" style="font-size:22px">'+esc(q[0])+'</div><button onclick="tg(\''+k+'\')">'+(S.open[k]?'Skryť riešenie':'Ukázať riešenie')+'</button>';
 if(S.open[k])h+='<div class="sol">✔ '+esc(q[1])+'</div>';
-h+='<div class="chips">';
-S.teams.forEach(function(t,ti){var s=t.m[k]||0;h+='<button class="chip s'+s+'" onclick="mk('+r+','+i+','+ti+')">'+esc(t.n)+(s==1?' ✓':s==2?' ✗':'')+'</button>'});
-h+='</div></div>'});
-h+='<div class="card"><b>Body po kole '+(r+1)+'</b><table><tr><th>Tím</th><th>Body v kole</th><th>Spolu</th><th>Pacienti</th></tr>';
-S.teams.forEach(function(t){h+='<tr><td>'+esc(t.n)+'</td><td>'+rpts(t,r)+'</td><td>'+pts(t)+'</td><td class="hs">'+hearts(t)+'</td></tr>'});
-h+='</table><div class="row"><button class="on" onclick="go('+(r+1)+')">Ďalej →</button></div></div>';return h}
-function fin(){
-var h='<div class="card"><div class="q">Finále: Sviatočná sázka</div><p class="mu"><span class="badge" style="background:var(--warn)">⏱ čas: 2 min</span> <button class="sm" onclick="tset(120);tgo()">▶ Spustiť časovač</button><br>Najprv tímy vsadia body (0 až 5) na tip výsledku, až potom počítajú. Trafený tip = získajú vsadené body navyše, netrafený = stratia vsadené body.</p><div class="q">'+FQ+'</div><button onclick="tg(\'f\')">'+(S.open.f?'Skryť riešenie':'Ukázať riešenie')+'</button>';
-if(S.open.f)h+='<div class="sol">✔ '+FA+'</div>';h+='</div><div class="card"><table><tr><th>Tím</th><th>Vsadené body</th><th>Výsledok</th></tr>';
-S.teams.forEach(function(t,i){h+='<tr><td>'+esc(t.n)+'</td><td><select onchange="S.teams['+i+'].bet=+this.value;save();render(true)">';
-for(var b=0;b<=5;b++)h+='<option'+(t.bet==b?' selected':'')+'>'+b+'</option>';
-h+='</select></td><td><button class="chip '+(t.fin==1?'s1':'')+'" onclick="S.teams['+i+'].fin=S.teams['+i+'].fin==1?0:1;save();render(true)">Trafil ✓</button> <button class="chip '+(t.fin==2?'s2':'')+'" onclick="S.teams['+i+'].fin=S.teams['+i+'].fin==2?0:2;save();render(true)">Netrafil ✗</button></td></tr>'});
-h+='</table><div class="row"><button class="on" onclick="go(5)">Výsledky →</button></div></div>';return h}
-function res(){
-var a=S.teams.map(function(t){return{n:t.n,p:pts(t),l:lives(t),c:R[3].k.filter(function(q,i){return t.m['3_'+i]==1}).length}});
-a.forEach(function(x){x.tot=x.p+x.l});a.sort(function(x,y){return y.tot-x.tot});
-var best=Math.max.apply(null,a.map(function(x){return x.c})),h='<div class="card"><div class="q">🏆 Výsledky</div><p class="mu">Spolu = body + 1 bod za každého zachráneného pacienta.</p><table><tr><th>#</th><th>Tím</th><th>Body</th><th>Pacienti</th><th>Spolu</th></tr>';
-a.forEach(function(x,i){h+='<tr class="'+(x.tot==a[0].tot?'win':'')+'"><td>'+(i+1)+'.</td><td>'+esc(x.n)+'</td><td>'+x.p+'</td><td>'+x.l+' / 5</td><td>'+x.tot+'</td></tr>'});
-h+='</table>';
+h+='<div class="chips">';S.teams.forEach(function(t,ti){var s=t.m[k]||0;h+='<button class="chip s'+s+'" onclick="mk('+r+','+i+','+ti+')">'+esc(t.n)+(s==1?' ✓':s==2?' ✗':'')+'</button>'});h+='</div></div>'});h+='<div class="card"><b>Body po kole '+(r+1)+'</b><table><tr><th>Tím</th><th>Body v kole</th><th>Spolu</th><th>Pacienti</th></tr>';
+S.teams.forEach(function(t){h+='<tr><td>'+esc(t.n)+'</td><td>'+rpts(t,r)+'</td><td>'+pts(t)+'</td><td class="hs">'+hearts(t)+'</td></tr>'});h+='</table><div class="row"><button class="on" onclick="go('+(r+1)+')">Ďalej →</button></div></div>';return h}
+function fin(){var h='<div class="card"><div class="q">Finále: Sviatočná sázka</div><p class="mu"><span class="badge" style="background:var(--warn)">⏱ čas: 2 min</span> <button class="sm" onclick="tset(120);tgo()">Spustiť čas</button></p><div class="card"><div class="q" style="font-size:22px">'+FQ+'</div>'+(S.open.f?'<div class="sol">✔ '+FA+'</div>':'')+'<button onclick="tg(\'f\')">'+(S.open.f?'Skryť riešenie':'Ukázať riešenie')+'</button></div><div class="card"><table><tr><th>Tím</th><th>Vsadené body</th><th>Výsledok</th></tr>';
+S.teams.forEach(function(t,i){h+='<tr><td>'+esc(t.n)+'</td><td><select onchange="S.teams['+i+'].bet=+this.value;save();render(true)">';for(var b=0;b<=5;b++)h+='<option'+(t.bet==b?' selected':'')+'>'+b+'</option>';h+='</select></td><td><button class="chip '+(t.fin==1?'s1':'')+'" onclick="S.teams['+i+'].fin=S.teams['+i+'].fin==1?0:1;save();render(true)">Trafil ✓</button> <button class="chip '+(t.fin==2?'s2':'')+'" onclick="S.teams['+i+'].fin=S.teams['+i+'].fin==2?0:2;save();render(true)">Nehoda ✗</button></td></tr>'});h+='</table><div class="row"><button class="on" onclick="go(5)">Výsledky →</button></div></div>';return h}
+function res(){var a=S.teams.map(function(t){return{n:t.n,p:pts(t),l:lives(t),c:R[3].k.filter(function(q,i){return t.m['3_'+i]==1}).length}});a.forEach(function(x){x.tot=x.p+x.l});a.sort(function(x,y){return y.tot-x.tot});var best=Math.max.apply(null,a.map(function(x){return x.c})),h='<div class="card"><div class="q">🏆 Výsledky</div><p class="mu">Spolu = body + 1 bod za každého zachráneného pacienta.</p><table><tr><th>Poradie</th><th>Tím</th><th>Body</th><th>Pacienti</th><th>Spolu</th></tr>';
+a.forEach(function(x,i){h+='<tr class="'+(x.tot==a[0].tot?'win':'')+'"><td>'+(i+1)+'.</td><td>'+esc(x.n)+'</td><td>'+x.p+'</td><td>'+x.l+' / 5</td><td>'+x.tot+'</td></tr>'});h+='</table>';
 if(best>0)h+='<p>🔎 Najlepší kontrolór (kolo 4): <b>'+a.filter(function(x){return x.c==best}).map(function(x){return esc(x.n)}).join(', ')+'</b> ('+best+' z 4 chýb)</p>';
+h+='<div class="row"><button class="on" onclick="exportResultsXlsx()">⬇ XLSX</button><button class="on" onclick="exportResultsPdf()">⬇ PDF</button></div>';
 return h+'</div>'}
 function hearts(t){var l=lives(t);return '❤️'.repeat(l)+'🖤'.repeat(5-l)}
-function bar(){
-var h='';S.teams.forEach(function(t,i){h+='<div class="tm"><b>'+esc(t.n)+'</b><span class="sc">'+pts(t)+'</span> <span class="mu">b</span> <span class="hs">'+hearts(t)+'</span><div class="row" style="margin:2px 0 0"><button class="sm" onclick="adj('+i+',\'adj\',-1)">−1 b</button><button class="sm" onclick="adj('+i+',\'adj\',1)">+1 b</button><button class="sm" onclick="adj('+i+',\'adj\',2)" title="Bonus za nájdenú chybu">+2 bonus</button><button class="sm" onclick="adj('+i+',\'la\',1)">−❤</button><button class="sm" onclick="adj('+i+',\'la\',-1)">+❤</button></div></div>'});
-document.getElementById('bar').innerHTML=h}
-var tl=20,tt=20,ti=null;
-function tshow(){var e=document.getElementById('tv');e.textContent=Math.floor(tl/60)+':'+('0'+tl%60).slice(-2);e.className=tl==0?'end':''}
-function tset(s){clearInterval(ti);ti=null;tt=s;tl=s;document.getElementById('tb').textContent='▶';tshow()}
-function tgo(){var b=document.getElementById('tb');if(ti){clearInterval(ti);ti=null;b.textContent='▶';return}
-if(tl==0)tl=tt;b.textContent='⏸';tshow();ti=setInterval(function(){tl--;tshow();if(tl<=0){clearInterval(ti);ti=null;b.textContent='▶'}},1000)}
-render();
+function bar(){var h='';S.teams.forEach(function(t,i){h+='<div class="tm"><b>'+esc(t.n)+'</b><span class="sc">'+pts(t)+'</span> <span class="mu">b</span> <span class="hs">'+hearts(t)+'</span><div class="row" style="margin-top:4px"><button class="sm" onclick="go('+S.v+')">Aktualizovať</button></div></div>'});document.getElementById('bar').innerHTML=h}
+function prepareExportRows(){var rows=S.teams.map(function(t){return{Tím:t.n,Body:pts(t),Pacienti:lives(t),Celkom:pts(t)+lives(t),Vsadené:t.bet,Finále:t.fin===1?'Trafil':(t.fin===2?'Nehoda':'—')}});rows.sort(function(a,b){return b.Celkom-a.Celkom});rows.forEach(function(r,i){r.Poradie=i+1;});return rows}
+function exportResultsXlsx(){if(typeof XLSX === 'undefined'){alert('Knižnica XLSX nie je načítaná.');return}var rows=prepareExportRows();var ws=XLSX.utils.json_to_sheet(rows);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Výsledky');XLSX.writeFile(wb,'vysledky-zmena-na-oddeleni.xlsx')}
+function exportResultsPdf(){if(typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF){if(window.print){window.print();return}alert('Knižnica PDF nie je načítaná.');return}var {jsPDF}=window.jspdf;var doc=new jsPDF();var rows=prepareExportRows();var y=20;doc.setFontSize(18);doc.text('Výsledky: Zmena na oddelení',14,y);y+=12;doc.setFontSize(11);doc.text('Poradie | Tím | Body | Pacienti | Celkom',14,y);y+=8;rows.forEach(function(r,i){var line=''+r.Poradie+'. '+r.Tím+' | '+r.Body+' | '+r.Pacienti+' | '+r.Celkom;doc.text(line,14,y);y+=7;if(y>270){doc.addPage();y=20}});doc.save('vysledky-zmena-na-oddeleni.pdf')}
+var tl=20,tt=20,ti=null;function tshow(){var e=document.getElementById('tv');e.textContent=Math.floor(tl/60)+':'+('0'+tl%60).slice(-2);e.className=tl==0?'end':''}function tset(s){clearInterval(ti);ti=null;tt=s;tl=s;document.getElementById('tb').textContent='▶';tshow()}function tgo(){var b=document.getElementById('tb');if(ti){clearInterval(ti);ti=null;b.textContent='▶';return}if(tl==0)tl=tt;b.textContent='⏸';tshow();ti=setInterval(function(){tl--;tshow();if(tl<=0){clearInterval(ti);ti=null;b.textContent='▶'}},1000)}render();
 </script>
 </body>
 </html>
