@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zmena na oddelení</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f7f9;--card:#fff;--tx:#14262e;--mu:#5b7079;--ac:#0b7a75;--ok:#1a9a4a;--bad:#d23b3b;--bd:#d5e0e5;--warn:#c98a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1a1f;--card:#17262d;--tx:#e8f1f4;--mu:#93a9b2;--ac:#3cc4bb;--ok:#4cd07d;--bad:#ff6b6b;--bd:#2a3d46;--warn:#f0b429}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1a1f;--card:#17262d;--tx:#e8f1f4;--mu:#93a9b2;--ac:#3cc4bb;--ok:#4cd07d;--bad:#ff6b6b;--bd:#2a3d46;--warn:#f0b429}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:18px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:150px}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 18px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
+h1{font-size:22px;margin:0 12px 0 0;color:var(--ac)}
+nav{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 14px}
+button:hover{border-color:var(--ac)}
+button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:1100px;margin:0 auto;padding:18px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.q{font-size:30px;font-weight:600;margin:4px 0 10px}
+.sol{font-size:26px;color:var(--ok);font-weight:600;margin:8px 0}
+.mu{color:var(--mu);font-size:16px}
+.ov{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:10px;margin-bottom:12px}
+.oi{border:1px solid var(--bd);border-radius:10px;padding:6px 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{min-width:110px;text-align:center}
+.chip.s1{background:var(--ok);color:#fff;border-color:var(--ok)}
+.chip.s2{background:var(--bad);color:#fff;border-color:var(--bad)}
+.badge{display:inline-block;background:var(--ac);color:#fff;border-radius:20px;padding:2px 12px;font-size:15px;margin-right:6px}
+.badge.r{background:var(--bad)}
+#timer{display:flex;gap:6px;align-items:center}
+#tv{font-size:28px;font-variant-numeric:tabular-nums;min-width:80px;text-align:center;font-weight:700}
+#tv.end{color:var(--bad);animation:bl .5s infinite alternate}
+@keyframes bl{to{opacity:.25}}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:2px solid var(--ac);padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;overflow-x:auto;z-index:6}
+.tm{min-width:170px;border:1px solid var(--bd);border-radius:12px;padding:6px 10px;flex:1}
+.tm b{display:block}
+.sc{font-size:26px;font-weight:700;color:var(--ac)}
+.hs{letter-spacing:2px}
+.sm{padding:2px 9px;font-size:15px;border-radius:8px}
+input,select{font:inherit;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px 10px}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px;border-bottom:1px solid var(--bd);text-align:left}
+tr.win td{background:color-mix(in srgb,var(--ok) 20%,transparent);font-weight:700}
+.row{display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<header>
+<h1>🏥 Zmena na oddelení</h1>
+<nav id="nav"></nav>
+<div id="timer"><button class="sm" onclick="tset(20)">20 s</button><button class="sm" onclick="tset(60)">1 min</button><button class="sm" onclick="tset(120)">2 min</button><button class="sm" onclick="tset(180)">3 min</button><span id="tv">0:20</span><button class="sm" onclick="tgo()" id="tb">▶</button></div>
+</header>
+<main id="app"></main>
+<div id="bar"></div>
+<script>
+var R=[
+{t:'Kolo 1: Čítanie letáka',tm:60,p:1,risk:0,info:'Každý člen tímu dostane jednu kartu A až E a prepíše ju bez záporných exponentov. Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. (1 bod)',k:[['A: µg·ml⁻¹','µg/ml'],['B: mg·kg⁻¹·h⁻¹','mg/(kg·h)'],['C: ml·h⁻¹','ml/h'],['D: kg⁻¹ · kg = ?','1 (kg⁰)'],['E: (mg·ml⁻¹)⁻¹','ml/mg']]},
+{t:'Kolo 2: Dávky',tm:180,p:3,risk:1,info:'Každý člen tímu rieši jednu úlohu A až E, píše aj jednotky (musia sa pokrátiť na správnu). Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. Chyba v dávke = tím stráca pacienta. (3 body)',k:[['A: Pacient 80 kg, dávka 3 mg·kg⁻¹·deň⁻¹, liečba 4 dni. Koľko mg celkom?','3 · 80 · 4 = 960 mg'],['B: Infúzia 1,5 ml·kg⁻¹·h⁻¹, pacient 50 kg, 8 hodín. Koľko ml?','1,5 · 50 · 8 = 600 ml'],['C: Predpísané 120 mg, koncentrácia 5 mg·ml⁻¹. Koľko ml natiahnuť?','120 : 5 = 24 ml'],['D: Pacient 40 kg, dávka 2 mg·kg⁻¹ rozdelená na 4 rovnaké dávky, koncentrácia 4 mg·ml⁻¹. Koľko ml je jedna dávka?','2·40 = 80 mg; 80 : 4 = 20 mg; 20 : 4 = 5 ml'],['E: Pacient 60 kg, dávka 0,5 mg·kg⁻¹·h⁻¹, podávanie 6 hodín, koncentrácia 2 mg·ml⁻¹. Koľko ml roztoku treba?','0,5 · 60 · 6 = 180 mg; 180 : 2 = 90 ml']]},
+{t:'Kolo 3: Poplach na tlačiarni',tm:180,p:4,risk:0,info:'Každý člen tímu zjednoduší jeden výraz A až E bez záporných exponentov a uvedie podmienky. Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. (4 body)',k:[['A: (c⁻¹ · V²)³ / (c² · V⁻¹)⁻²','c · V⁴ (c ≠ 0, V ≠ 0)'],['B: (d⁻² · m)³ · (d · m⁻¹)²','m / d⁴ (d ≠ 0, m ≠ 0)'],['C: (t⁻¹ · V²)⁻² · t⁻³ / V⁻⁴','1 / t (t ≠ 0, V ≠ 0)'],['D: (a⁻² · b³)² · (a³ · b⁻¹)⁻² / b⁴','b⁴ / a¹⁰ (a ≠ 0, b ≠ 0)'],['E: (2p⁻¹ · q²)³ · (4p · q⁻¹)⁻¹','2q⁷ / p⁴ (p ≠ 0, q ≠ 0)']]},
+{t:'Kolo 4: Chyba v zošite',tm:120,p:3,risk:1,info:'Každý člen tímu dostane jeden zápis A až E, nájde chybu, opraví ju a vysvetlí. Každý zodpovedá za svoj výsledok, lístky si nevymieňajú. Prehliadnutá chyba = tím stráca pacienta. Nájdená chyba u súpera = bonus +2 (tlačidlá dole). (3 body)',k:[['A: kg⁻¹ · kg = 0','kg⁰ = 1. Exponent 0 neznamená výsledok 0.'],['B: (2d)³ = 2d³','8d³. Umocňuje sa celý súčin.'],['C: 3t⁻² = 1/(3t²)','3/t². Záporný exponent sa týka len t.'],['D: „5 mg·kg⁻¹ pre 60 kg je 5 · 60⁻¹ mg“','kg⁻¹ patrí jednotke: 5 mg·kg⁻¹ · 60 kg = 300 mg'],['E: (x²)³ = x⁵','x⁶. Pri mocnine mocniny sa exponenty násobia.']]}
+];
+var FQ='(xⁿ⁺²)² · x⁻²ⁿ / x⁴', FA='x²ⁿ⁺⁴ · x⁻²ⁿ · x⁻⁴ = x⁰ = 1 (x ≠ 0)';
+var S={v:-2,teams:['Zelení Záchranári','Rýchle Striekačky','Sestričky v akcii','Doktori Mocniny','Tím Stetoskop','Odmocňovači'].map(nt),open:{}};
+function nt(n){return{n:n,adj:0,la:0,m:{},bet:0,fin:0}}
+try{var sv=localStorage.getItem('zno3');if(sv){var o=JSON.parse(sv);if(o&&o.teams&&o.teams.length){S=o;S.open={}}}}catch(e){}
+function save(){try{localStorage.setItem('zno3',JSON.stringify(S))}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function pts(t){var s=t.adj,r,i;for(r=0;r<R.length;r++)for(i=0;i<R[r].k.length;i++)if(t.m[r+'_'+i]==1)s+=R[r].p;if(t.fin==1)s+=t.bet;if(t.fin==2)s-=t.bet;return s}
+function rpts(t,r){var s=0;for(var i=0;i<R[r].k.length;i++)if(t.m[r+'_'+i]==1)s+=R[r].p;return s}
+function lives(t){var l=5-t.la,r,i;for(r=0;r<R.length;r++)if(R[r].risk)for(i=0;i<R[r].k.length;i++)if(t.m[r+'_'+i]==2)l--;var p=pts(t);if(p<0)l-=Math.floor(-p/3);return Math.max(0,Math.min(5,l))}
+function fmt(x){return x<60?x+' s':(x/60)+' min'}
+function go(v){S.v=v;S.open={};render()}
+function mk(r,i,ti){var t=S.teams[ti],k=r+'_'+i,n=R[r].risk?3:2;t.m[k]=((t.m[k]||0)+1)%n;save();render(true)}
+function tg(k){S.open[k]=!S.open[k];render(true)}
+function adj(ti,f,d){S.teams[ti][f]+=d;save();render(true)}
+function render(keep){
+var y=window.scrollY,nav='',i;
+var lab=['1','2','3','4','Finále','Výsledky'];
+nav='<button class="'+(S.v==-2?'on':'')+'" onclick="go(-2)">📖 Príbeh</button><button class="'+(S.v==-1?'on':'')+'" onclick="go(-1)">⚙ Tímy</button>';
+for(i=0;i<6;i++)nav+='<button class="'+(S.v==i?'on':'')+'" onclick="go('+i+')">'+(i<4?'Kolo ':'')+lab[i]+'</button>';
+document.getElementById('nav').innerHTML=nav;
+var h='';
+if(S.v==-2)h=story();else if(S.v==-1)h=setup();else if(S.v<4)h=round(S.v);else if(S.v==4)h=fin();else h=res();
+document.getElementById('app').innerHTML=h;
+bar();if(keep){window.scrollTo(0,y)}else{window.scrollTo(0,0)}}
+function story(){
+var svg=`<svg viewBox="0 0 700 320" style="width:100%;height:auto;display:block;border-radius:12px" role="img" aria-label="Nina sedí u babky v kuchyni, babka drží leták s dávkovaním liekov" font-family="sans-serif"><defs><linearGradient id="wl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6e6"/><stop offset="1" stop-color="#f1d6ac"/></linearGradient><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fcdf0"/><stop offset="1" stop-color="#e2f4fc"/></linearGradient><radialGradient id="sk" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#fcdcc2"/><stop offset="1" stop-color="#e8b08a"/></radialGradient><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b787cf"/><stop offset="1" stop-color="#86559f"/></linearGradient><linearGradient id="hr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6b4026"/><stop offset="1" stop-color="#3d2314"/></linearGradient><pattern id="ck" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#fff"/><rect width="12" height="12" fill="#e59a9a" opacity=".7"/><rect x="12" y="12" width="12" height="12" fill="#e59a9a" opacity=".7"/></pattern></defs>
+<rect width="700" height="320" fill="url(#wl)"/>
+<rect x="300" y="24" width="72" height="54" rx="3" fill="#fff" stroke="#8a5a2b" stroke-width="5"/><rect x="305" y="29" width="62" height="44" fill="#cfe9f7"/><circle cx="350" cy="42" r="7" fill="#f7c948"/><path d="M305 73V58Q322 44 336 58Q350 50 367 62V73Z" fill="#6bb36b"/>
+<circle cx="410" cy="50" r="22" fill="#fff" stroke="#8a5a2b" stroke-width="4"/><path d="M410 50V36M410 50L420 56" stroke="#333" stroke-width="3" stroke-linecap="round"/><circle cx="410" cy="50" r="2.5" fill="#333"/>
+<rect x="30" y="126" width="120" height="8" rx="2" fill="#8a5a2b"/><path d="M76 126L80 102H104L108 126Z" fill="#c8684a"/><ellipse cx="84" cy="94" rx="10" ry="18" fill="#4fa05a" transform="rotate(-25 84 94)"/><ellipse cx="100" cy="92" rx="10" ry="18" fill="#3f8d4c" transform="rotate(25 100 92)"/><ellipse cx="92" cy="86" rx="8" ry="18" fill="#5cb468"/><rect x="40" y="108" width="10" height="18" fill="#3b82c4"/><rect x="51" y="104" width="9" height="22" fill="#e8a33d"/><rect x="61" y="110" width="9" height="16" fill="#c0392b"/>
+<rect x="565" y="25" width="115" height="120" rx="5" fill="url(#sky)" stroke="#8a5a2b" stroke-width="6"/><path d="M622 25V145M565 85H680" stroke="#8a5a2b" stroke-width="4"/><ellipse cx="600" cy="55" rx="18" ry="8" fill="#fff" opacity=".85"/><ellipse cx="650" cy="110" rx="20" ry="8" fill="#fff" opacity=".8"/><path d="M560 20Q590 70 560 150H540Q550 70 540 20Z" fill="#f2a6b8"/><path d="M685 20Q665 70 685 150H700V20Z" fill="#f2a6b8"/><polygon points="570,145 680,145 650,232 470,232" fill="#fff8d6" opacity=".22"/>
+<path d="M452 100Q448 54 500 54Q552 54 548 100L556 172L444 172Z" fill="url(#hr)"/><path d="M410 232Q414 158 500 154Q586 158 590 232Z" fill="#fff" stroke="#d0d0d0" stroke-width="2"/><path d="M478 154L500 190L522 154Z" fill="#2aa198"/><path d="M478 154L488 232M522 154L512 232" stroke="#e2e2e2" stroke-width="2"/><rect x="540" y="192" width="38" height="22" rx="3" fill="#fff" stroke="#aaa"/><text x="559" y="207" font-size="9" text-anchor="middle" fill="#2a6f6a" font-weight="bold">NINA</text><path d="M470 158Q460 208 500 212Q540 208 530 158" stroke="#444" stroke-width="4" fill="none"/><circle cx="500" cy="214" r="7" fill="#8a8a8a" stroke="#555" stroke-width="2"/><rect x="488" y="140" width="24" height="18" fill="#e8b08a"/><circle cx="500" cy="112" r="38" fill="url(#sk)"/><path d="M462 104Q470 70 500 70Q536 70 540 108Q522 88 498 92Q476 94 462 104Z" fill="url(#hr)"/><path d="M478 101Q487 96 496 99M504 99Q513 96 522 101" stroke="#4a2c1a" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="487" cy="113" rx="7" ry="5" fill="#fff"/><ellipse cx="513" cy="113" rx="7" ry="5" fill="#fff"/><circle cx="487" cy="113" r="4" fill="#5b3a22"/><circle cx="513" cy="113" r="4" fill="#5b3a22"/><circle cx="487" cy="113" r="2" fill="#111"/><circle cx="513" cy="113" r="2" fill="#111"/><circle cx="488.5" cy="111.5" r="1.2" fill="#fff"/><circle cx="514.5" cy="111.5" r="1.2" fill="#fff"/><path d="M480 109Q487 106 494 109M506 109Q513 106 520 109" stroke="#222" stroke-width="2" fill="none"/><path d="M500 115Q496 125 501 127" stroke="#d29a74" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="476" cy="126" r="7" fill="#f08a8a" opacity=".35"/><circle cx="524" cy="126" r="7" fill="#f08a8a" opacity=".35"/><path d="M488 131Q500 145 512 131Z" fill="#fff" stroke="#b0334f" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M214 112Q206 60 250 54Q294 60 286 112L282 130L218 130Z" fill="#cfcfd6"/><circle cx="250" cy="52" r="18" fill="#d6d6dd"/><path d="M238 46Q250 38 262 46M240 56Q250 62 260 56" stroke="#b5b5c0" stroke-width="2" fill="none"/><path d="M165 232Q168 158 250 154Q332 158 335 232Z" fill="url(#cg)"/><path d="M232 154L250 184L268 154Z" fill="#fff"/><path d="M250 184V232" stroke="#6e4488" stroke-width="2"/><circle cx="250" cy="198" r="3.5" fill="#efe0f7"/><circle cx="250" cy="214" r="3.5" fill="#efe0f7"/><circle cx="282" cy="176" r="6" fill="#e3b94a" stroke="#b58a1f"/><rect x="238" y="140" width="24" height="18" fill="#dca37c"/><circle cx="212" cy="118" r="7" fill="url(#sk)"/><circle cx="288" cy="118" r="7" fill="url(#sk)"/><circle cx="212" cy="127" r="2.5" fill="#e3b94a"/><circle cx="288" cy="127" r="2.5" fill="#e3b94a"/><circle cx="250" cy="112" r="38" fill="url(#sk)"/><path d="M213 104Q220 72 250 70Q280 72 287 104Q270 88 250 88Q230 88 213 104Z" fill="#e0e0e7"/><circle cx="214" cy="96" r="8" fill="#d6d6dd"/><circle cx="286" cy="96" r="8" fill="#d6d6dd"/><path d="M227 101Q236 96 245 100M255 100Q264 96 273 101" stroke="#9a9aa5" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="236" cy="113" r="11" fill="#fff" fill-opacity=".35" stroke="#6b4e3a" stroke-width="3"/><circle cx="264" cy="113" r="11" fill="#fff" fill-opacity=".35" stroke="#6b4e3a" stroke-width="3"/><path d="M247 112Q250 109 253 112M225 112L214 114M275 112L286 114" stroke="#6b4e3a" stroke-width="3" fill="none"/><circle cx="236" cy="114" r="4" fill="#3b2a20"/><circle cx="264" cy="114" r="4" fill="#3b2a20"/><circle cx="237.5" cy="112.5" r="1.4" fill="#fff"/><circle cx="265.5" cy="112.5" r="1.4" fill="#fff"/><path d="M226 122L221 125M274 122L279 125M224 108L219 106M276 108L281 106" stroke="#c98f68" stroke-width="1.5" stroke-linecap="round"/><path d="M250 116Q246 126 251 128" stroke="#d29a74" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="228" cy="128" r="7" fill="#f08a8a" opacity=".35"/><circle cx="272" cy="128" r="7" fill="#f08a8a" opacity=".35"/><path d="M236 134Q250 147 264 134" stroke="#b0334f" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M232 129Q230 134 234 138M268 129Q270 134 266 138" stroke="#c98f68" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<rect y="228" width="700" height="12" fill="#a8743c"/><rect y="240" width="700" height="80" fill="url(#ck)"/><rect y="240" width="700" height="6" fill="#000" opacity=".08"/>
+<ellipse cx="118" cy="226" rx="30" ry="6" fill="#fff" stroke="#ccc"/><path d="M100 202H138Q138 226 119 226Q100 226 100 202Z" fill="#fff" stroke="#bbb" stroke-width="2"/><path d="M138 208Q150 208 148 218Q146 224 136 222" stroke="#bbb" stroke-width="3" fill="none"/><ellipse cx="119" cy="204" rx="19" ry="3" fill="#a05a2c"/><path d="M110 196Q104 186 112 180Q118 174 110 166M126 196Q120 186 128 180Q134 174 126 166" stroke="#c9c9c9" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/>
+<rect x="170" y="204" width="102" height="24" rx="6" fill="#fff" stroke="#888"/><rect x="176" y="208" width="11" height="16" rx="2" fill="#e74c3c"/><rect x="190" y="208" width="11" height="16" rx="2" fill="#f39c12"/><rect x="204" y="208" width="11" height="16" rx="2" fill="#f1c40f"/><rect x="218" y="208" width="11" height="16" rx="2" fill="#2ecc71"/><rect x="232" y="208" width="11" height="16" rx="2" fill="#3498db"/><rect x="246" y="208" width="11" height="16" rx="2" fill="#9b59b6"/><rect x="260" y="208" width="8" height="16" rx="2" fill="#e84393"/>
+<rect x="470" y="214" width="62" height="14" rx="2" fill="#2aa198"/><rect x="474" y="216" width="54" height="10" fill="#fff"/><path d="M520 208L560 226" stroke="#2c3e50" stroke-width="4" stroke-linecap="round"/>
+<g transform="rotate(-4 340 190)"><rect x="292" y="144" width="104" height="84" rx="4" fill="#fff" stroke="#bbb"/><text x="302" y="166" font-size="12" fill="#333" font-weight="bold">Dávkovanie:</text><text x="302" y="190" font-size="13" fill="#c0392b" font-weight="bold">5 mg·kg⁻¹·deň⁻¹</text><path d="M302 202H386M302 211H368" stroke="#ccc" stroke-width="3"/></g><ellipse cx="298" cy="222" rx="14" ry="10" fill="url(#sk)"/><ellipse cx="390" cy="220" rx="14" ry="10" fill="url(#sk)"/>
+<rect x="60" y="14" width="172" height="48" rx="18" fill="#fff" stroke="#999"/><path d="M200 61L222 94L232 61Z" fill="#fff" stroke="#999"/><path d="M201 60H231" stroke="#fff" stroke-width="3"/><text x="75" y="44" font-size="19" fill="#333">Čo je to „mínus jedna“?</text></svg>`;
+return '<div class="card" style="padding:8px">'+svg+'</div><div class="card" style="font-size:22px;line-height:1.5"><div class="q">📖 Babkine lieky</div><p>V nedeľu poobede sedela prváčka Nina u babky. Babka si chystala lieky na týždeň a držala v ruke leták, ktorý bez okuliarov nevidela.</p><p><i>„Ninka, prečítaj mi, čo je tu napísané. Dávkovanie: 5 mg·kg⁻¹·deň⁻¹. Čo je to to mínus jedna?“</i></p><p>Nina sa zasekla. V škole sa učili o záporných exponentoch, ale ešte jej nenapadlo, že ich uvidí na papieri s liekom. V pondelok to na praxi povedala sestre Jane. Tá sa usmiala:</p><p><i>„Mínus jednej sa v nemocnici nevyhneš. kg⁻¹ znamená ‚na kilogram‘. Každá dávka, každá infúzia aj každá koncentrácia je zapísaná takto. Kto to nevie čítať, ten sa pomýli. A kto sa pomýli, ten ublíži.“</i></p><p><b>Dnes ste Ninini kolegovia.</b> Každý tím preberie jedno oddelenie, má 5 pacientov a musí ich ochrániť pred chybami v dávkach, jednotkách a vzorcoch.</p><p class="mu" style="font-size:18px">Správna odpoveď = body. Chyba v dávke alebo v zošite = strata pacienta. Každý zachránený pacient na konci = +1 bod. Víťazí tím s najvyšším súčtom.</p><div class="row"><button class="on" style="font-size:22px" onclick="go(-1)">Prihlásiť tímy →</button></div></div>'}
+function setup(){
+var h='<div class="card"><div class="q">Tímy</div><p class="mu">Každý tím sa prihlási sám: napíše názov a klikne na tlačidlo (alebo stlačí Enter). Prihlásené tímy: <b>'+S.teams.length+' / 15</b>. Názov tímu môžeš kedykoľvek prepísať v zozname nižšie. Každý tím začína s 5 pacientmi.</p><div class="row"><input id="nn" maxlength="24" placeholder="Názov tímu" style="font-size:24px;flex:1;min-width:220px" onkeydown="if(event.key===\'Enter\')reg()"><button class="on" onclick="reg()" style="font-size:22px">Prihlásiť tím</button></div><p class="mu" id="msg"></p>';
+S.teams.forEach(function(t,i){h+='<div class="row"><span style="font-size:22px">'+(i+1)+'.</span><input value="'+esc(t.n)+'" maxlength="24" style="font-size:22px;flex:1;min-width:200px" oninput="S.teams['+i+'].n=this.value;save();bar()"><button class="sm" onclick="unreg('+i+')">✕ Odhlásiť</button></div>'});
+h+='<div class="row"><button onclick="go(0)" class="on"'+(S.teams.length<2?' disabled':'')+'>Začať hru →</button></div>';
+h+='<div class="row"><button onclick="rst()" id="rb">🗑 Vynulovať body a pacientov</button></div></div>';return h}
+function reg(){var e=document.getElementById('nn'),n=e.value.trim(),m=document.getElementById('msg');
+if(!n){m.textContent='Napíš názov tímu.';return}
+if(S.teams.length>=15){m.textContent='Je dosiahnutý maximálny počet 15 tímov.';return}
+if(S.teams.some(function(t){return t.n.toLowerCase()==n.toLowerCase()})){m.textContent='Tento názov už existuje, vyber si iný.';return}
+S.teams.push(nt(n));save();render(true);var f=document.getElementById('nn');if(f)f.focus()}
+function unreg(i){S.teams.splice(i,1);save();render(true)}
+var rc=0;function rst(){if(!rc){rc=1;document.getElementById('rb').textContent='Naozaj? Klikni ešte raz';setTimeout(function(){rc=0},3000);return}rc=0;S.teams.forEach(function(t){t.adj=0;t.la=0;t.m={};t.bet=0;t.fin=0});S.open={};save();render()}
+function round(r){
+var R0=R[r],h='<div class="card"><div class="q">'+R0.t+'</div><span class="badge">'+R0.p+' b / úloha</span><span class="badge" style="background:var(--warn)">⏱ čas: '+fmt(R0.tm)+'</span>'+(R0.risk?'<span class="badge r">hrozí strata pacienta</span>':'')+'<p class="mu">'+R0.info+'</p><p class="mu">Klikaj na meno tímu: <b>raz</b> = správne'+(R0.risk?', <b>dvakrát</b> = chyba (strata pacienta)':'')+', ďalší klik zruší.</p></div>';
+var ao=S.open['a'+r];
+h+='<div class="card"><div class="mu">Všetky úhohy kola naraz (na premietanie)</div><div class="mu" style="margin-bottom:8px;font-size:20px"><b>Každý zodpovedá za svoj výsledok, lístky si nevymieňajú.</b></div><div class="ov">';
+R0.k.forEach(function(q){h+='<div class="oi"><div class="q">'+esc(q[0])+'</div>'+(ao?'<div class="sol">✔ '+esc(q[1])+'</div>':'')+'</div>'});
+h+='</div><button onclick="tg(\'a'+r+'\')">'+(ao?'Skryť všetky riešenia':'Ukázať všetky riešenia')+'</button> <button class="on" onclick="tset('+R0.tm+');tgo()">▶ Spustiť časovač ('+fmt(R0.tm)+')</button></div>';
+h+='<div class="mu" style="margin:4px 4px 8px">Bodovanie po úhach:</div>';
+R0.k.forEach(function(q,i){var k=r+'_'+i;
+h+='<div class="card"><div class="q" style="font-size:22px">'+esc(q[0])+'</div><button onclick="tg(\''+k+'\')">'+(S.open[k]?'Skryť riešenie':'Ukázať riešenie')+'</button>';
+if(S.open[k])h+='<div class="sol">✔ '+esc(q[1])+'</div>';
+h+='<div class="chips">';
+S.teams.forEach(function(t,ti){var s=t.m[k]||0;h+='<button class="chip s'+s+'" onclick="mk('+r+','+i+','+ti+')">'+esc(t.n)+(s==1?' ✓':s==2?' ✗':'')+'</button>'});
+h+='</div></div>'});
+h+='<div class="card"><b>Body po kole '+(r+1)+'</b><table><tr><th>Tím</th><th>Body v kole</th><th>Spolu</th><th>Pacienti</th></tr>';
+S.teams.forEach(function(t){h+='<tr><td>'+esc(t.n)+'</td><td>'+rpts(t,r)+'</td><td>'+pts(t)+'</td><td class="hs">'+hearts(t)+'</td></tr>'});
+h+='</table><div class="row"><button class="on" onclick="go('+(r+1)+')">Ďalej →</button></div></div>';return h}
+function fin(){
+var h='<div class="card"><div class="q">Finále: Sviatočná sázka</div><p class="mu"><span class="badge" style="background:var(--warn)">⏱ čas: 2 min</span> <button class="sm" onclick="tset(120);tgo()">▶ Spustiť časovač</button><br>Najprv tímy vsadia body (0 až 5) na tip výsledku, až potom počítajú. Trafený tip = získajú vsadené body navyše, netrafený = stratia vsadené body.</p><div class="q">'+FQ+'</div><button onclick="tg(\'f\')">'+(S.open.f?'Skryť riešenie':'Ukázať riešenie')+'</button>';
+if(S.open.f)h+='<div class="sol">✔ '+FA+'</div>';h+='</div><div class="card"><table><tr><th>Tím</th><th>Vsadené body</th><th>Výsledok</th></tr>';
+S.teams.forEach(function(t,i){h+='<tr><td>'+esc(t.n)+'</td><td><select onchange="S.teams['+i+'].bet=+this.value;save();render(true)">';
+for(var b=0;b<=5;b++)h+='<option'+(t.bet==b?' selected':'')+'>'+b+'</option>';
+h+='</select></td><td><button class="chip '+(t.fin==1?'s1':'')+'" onclick="S.teams['+i+'].fin=S.teams['+i+'].fin==1?0:1;save();render(true)">Trafil ✓</button> <button class="chip '+(t.fin==2?'s2':'')+'" onclick="S.teams['+i+'].fin=S.teams['+i+'].fin==2?0:2;save();render(true)">Netrafil ✗</button></td></tr>'});
+h+='</table><div class="row"><button class="on" onclick="go(5)">Výsledky →</button></div></div>';return h}
+function res(){
+var a=S.teams.map(function(t){return{n:t.n,p:pts(t),l:lives(t),c:R[3].k.filter(function(q,i){return t.m['3_'+i]==1}).length}});
+a.forEach(function(x){x.tot=x.p+x.l});a.sort(function(x,y){return y.tot-x.tot});
+var best=Math.max.apply(null,a.map(function(x){return x.c})),h='<div class="card"><div class="q">🏆 Výsledky</div><p class="mu">Spolu = body + 1 bod za každého zachráneného pacienta.</p><table><tr><th>#</th><th>Tím</th><th>Body</th><th>Pacienti</th><th>Spolu</th></tr>';
+a.forEach(function(x,i){h+='<tr class="'+(x.tot==a[0].tot?'win':'')+'"><td>'+(i+1)+'.</td><td>'+esc(x.n)+'</td><td>'+x.p+'</td><td>'+x.l+' / 5</td><td>'+x.tot+'</td></tr>'});
+h+='</table>';
+if(best>0)h+='<p>🔎 Najlepší kontrolór (kolo 4): <b>'+a.filter(function(x){return x.c==best}).map(function(x){return esc(x.n)}).join(', ')+'</b> ('+best+' z 4 chýb)</p>';
+return h+'</div>'}
+function hearts(t){var l=lives(t);return '❤️'.repeat(l)+'🖤'.repeat(5-l)}
+function bar(){
+var h='';S.teams.forEach(function(t,i){h+='<div class="tm"><b>'+esc(t.n)+'</b><span class="sc">'+pts(t)+'</span> <span class="mu">b</span> <span class="hs">'+hearts(t)+'</span><div class="row" style="margin:2px 0 0"><button class="sm" onclick="adj('+i+',\'adj\',-1)">−1 b</button><button class="sm" onclick="adj('+i+',\'adj\',1)">+1 b</button><button class="sm" onclick="adj('+i+',\'adj\',2)" title="Bonus za nájdenú chybu">+2 bonus</button><button class="sm" onclick="adj('+i+',\'la\',1)">−❤</button><button class="sm" onclick="adj('+i+',\'la\',-1)">+❤</button></div></div>'});
+document.getElementById('bar').innerHTML=h}
+var tl=20,tt=20,ti=null;
+function tshow(){var e=document.getElementById('tv');e.textContent=Math.floor(tl/60)+':'+('0'+tl%60).slice(-2);e.className=tl==0?'end':''}
+function tset(s){clearInterval(ti);ti=null;tt=s;tl=s;document.getElementById('tb').textContent='▶';tshow()}
+function tgo(){var b=document.getElementById('tb');if(ti){clearInterval(ti);ti=null;b.textContent='▶';return}
+if(tl==0)tl=tt;b.textContent='⏸';tshow();ti=setInterval(function(){tl--;tshow();if(tl<=0){clearInterval(ti);ti=null;b.textContent='▶'}},1000)}
+render();
+</script>
+</body>
+</html>
